@@ -5,25 +5,17 @@ const scanLabel = document.getElementById('scanLabel');
 const welcomeText = document.getElementById('welcomeText');
 const activateBtn = document.getElementById('activateBtn');
 
-const agentNames = [
-  'MIRA',
-  'NOVA',
-  'SABLE',
-  'VANTA',
-  'KITE',
-  'DAHLIA',
-  'ORION',
-  'QUILL'
-];
+const agentNames = ['MIRA', 'NOVA', 'SABLE', 'VANTA', 'KITE', 'DAHLIA', 'ORION', 'QUILL'];
 
 let cameraStarted = false;
 let handConfirmed = false;
 let selectedAgent = 'MIRA';
-let detectedHand = null;
+let validationCount = 0;
 
 function setStatus(message, success = false) {
   scanLabel.textContent = message;
   const dot = document.querySelector('.status-dot');
+  if (!dot) return;
   dot.style.background = success ? '#9ef7d7' : '#ffcc66';
   dot.style.boxShadow = success
     ? '0 0 12px rgba(158, 247, 215, 0.9)'
@@ -35,84 +27,93 @@ function redirectToMission(agent) {
   window.location.href = 'mission.html';
 }
 
+function distance(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
 function drawHandSkeleton(results) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
-    detectedHand = null;
     return;
   }
 
   const landmarks = results.multiHandLandmarks[0];
-  detectedHand = landmarks;
 
-  const fingerColors = {
-    thumb: '#f4d35e',
-    index: '#39d0ff',
-    middle: '#20c997',
-    ring: '#ff9f1c',
-    pinky: '#ff5d8f'
-  };
+  ctx.save();
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
 
-  const connectionGroups = [
-    { color: fingerColors.thumb, pairs: [[0, 1], [1, 2], [2, 3], [3, 4]] },
-    { color: fingerColors.index, pairs: [[0, 5], [5, 6], [6, 7], [7, 8]] },
-    { color: fingerColors.middle, pairs: [[5, 9], [9, 10], [10, 11], [11, 12]] },
-    { color: fingerColors.ring, pairs: [[9, 13], [13, 14], [14, 15], [15, 16]] },
-    { color: fingerColors.pinky, pairs: [[13, 17], [17, 18], [18, 19], [19, 20]] },
+  const groups = [
+    { color: '#f6d365', pairs: [[0, 1], [1, 2], [2, 3], [3, 4]] },
+    { color: '#ffd166', pairs: [[0, 5], [5, 6], [6, 7], [7, 8]] },
+    { color: '#7ae582', pairs: [[5, 9], [9, 10], [10, 11], [11, 12]] },
+    { color: '#ff9f1c', pairs: [[9, 13], [13, 14], [14, 15], [15, 16]] },
+    { color: '#ff5d8f', pairs: [[13, 17], [17, 18], [18, 19], [19, 20]] },
     { color: '#dfe5f5', pairs: [[0, 17], [5, 9], [9, 13], [13, 17]] }
   ];
 
-  ctx.lineWidth = 3;
-  for (const group of connectionGroups) {
+  for (const group of groups) {
     ctx.strokeStyle = group.color;
+    ctx.lineWidth = 3;
     for (const [from, to] of group.pairs) {
-      const p1 = landmarks[from];
-      const p2 = landmarks[to];
+      const a = landmarks[from];
+      const b = landmarks[to];
       ctx.beginPath();
-      ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
-      ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+      ctx.moveTo(a.x * canvas.width, a.y * canvas.height);
+      ctx.lineTo(b.x * canvas.width, b.y * canvas.height);
       ctx.stroke();
     }
   }
 
   const pointColors = [
-    '#ff3b30', '#ff9f1c', '#ffd60a', '#32d74b', '#00c2ff',
-    '#7c4dff', '#ff4db8', '#00e5ff', '#7ae582', '#ff7f50',
-    '#ffb703', '#f72585', '#4cc9f0', '#90be6d', '#f6bd60',
-    '#9d4edd', '#48cae4', '#80ed99', '#f9c74f', '#ff8fab'
+    '#f94144', '#f3722c', '#f9c74f', '#90be6d', '#4cc9f0', '#577590',
+    '#ff5d8f', '#ffd166', '#7bdff2', '#06d6a0', '#c77dff', '#f4a261',
+    '#00b4d8', '#84dcc6', '#f15bb5', '#ffbe0b', '#2ec4b6', '#3a86ff',
+    '#00c2a8', '#a7c957'
   ];
 
   for (let i = 0; i < landmarks.length; i += 1) {
-    const point = landmarks[i];
+    const p = landmarks[i];
     ctx.beginPath();
     ctx.fillStyle = pointColors[i] || '#ffffff';
-    ctx.arc(point.x * canvas.width, point.y * canvas.height, i === 0 ? 7 : 5, 0, Math.PI * 2);
+    ctx.arc(p.x * canvas.width, p.y * canvas.height, i === 0 ? 7 : 5, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  ctx.restore();
 }
 
 function isOpenPalm(landmarks) {
   if (!landmarks || landmarks.length < 21) return false;
 
-  const fingerTipIndices = [4, 8, 12, 16, 20];
-  const fingerBaseIndices = [2, 6, 10, 14, 18];
+  const palmCenter = {
+    x: (landmarks[0].x + landmarks[5].x + landmarks[9].x + landmarks[13].x + landmarks[17].x) / 5,
+    y: (landmarks[0].y + landmarks[5].y + landmarks[9].y + landmarks[13].y + landmarks[17].y) / 5
+  };
 
-  const hasSpread = landmarks[4].x > landmarks[2].x - 0.08 && landmarks[4].x < landmarks[2].x + 0.18;
+  const tipIndexes = [4, 8, 12, 16, 20];
+  const baseIndexes = [2, 6, 10, 14, 18];
 
-  const tipsAboveBases = fingerTipIndices.every((tipIndex, index) => {
-    const baseIndex = fingerBaseIndices[index];
-    return landmarks[tipIndex].y < landmarks[baseIndex].y;
+  const fingerTipsExtended = tipIndexes.every((tipIndex, index) => {
+    const tip = landmarks[tipIndex];
+    const base = landmarks[baseIndexes[index]];
+    const fromCenter = distance(tip, palmCenter);
+    const fromBase = distance(tip, base);
+    return fromCenter > 0.045 && fromBase > 0.025 && tip.y < base.y;
   });
 
-  const thumbOpen = landmarks[4].x > landmarks[3].x;
-  const handUp = landmarks[9].y < landmarks[0].y + 0.2;
+  const thumbOpen = landmarks[4].x > landmarks[3].x + 0.02;
+  const handLifted = landmarks[9].y < landmarks[0].y + 0.18;
+  const fingerSpread = Math.abs(landmarks[8].x - landmarks[12].x) > 0.02 &&
+    Math.abs(landmarks[12].x - landmarks[16].x) > 0.02;
 
-  return hasSpread && tipsAboveBases && thumbOpen && handUp;
+  return fingerTipsExtended && thumbOpen && handLifted && fingerSpread;
 }
 
-function handlePalmScan(results) {
+function onHandResults(results) {
   if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
+    validationCount = 0;
     if (handConfirmed) {
       handConfirmed = false;
       welcomeText.textContent = 'Awaiting palm verification';
@@ -126,19 +127,23 @@ function handlePalmScan(results) {
   drawHandSkeleton(results);
 
   if (!isOpenPalm(landmarks)) {
+    validationCount = 0;
     setStatus('PALM REQUIRES OPEN POSITION', false);
     return;
   }
 
-  if (!handConfirmed) {
-    handConfirmed = true;
-    selectedAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
-    welcomeText.textContent = `Welcome, Agent ${selectedAgent}`;
-    setStatus('ACCESS GRANTED', true);
+  validationCount += 1;
 
-    setTimeout(() => {
-      redirectToMission(selectedAgent);
-    }, 1200);
+  if (validationCount >= 8) {
+    if (!handConfirmed) {
+      handConfirmed = true;
+      selectedAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
+      welcomeText.textContent = `Welcome, Agent ${selectedAgent}`;
+      setStatus('ACCESS GRANTED', true);
+      setTimeout(() => redirectToMission(selectedAgent), 1200);
+    }
+  } else {
+    setStatus('SCANNING PALM...', false);
   }
 }
 
@@ -167,20 +172,20 @@ async function startCamera() {
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
 
-    const hands = new Hands({
+    const hands = new window.Hands({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
     });
 
     hands.setOptions({
       maxNumHands: 1,
       modelComplexity: 1,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.7
+      minDetectionConfidence: 0.55,
+      minTrackingConfidence: 0.55
     });
 
-    hands.onResults(handlePalmScan);
+    hands.onResults(onHandResults);
 
-    const camera = new Camera(video, {
+    const cam = new window.Camera(video, {
       onFrame: async () => {
         await hands.send({ image: video });
       },
@@ -188,7 +193,7 @@ async function startCamera() {
       height: canvas.height
     });
 
-    camera.start();
+    cam.start();
     cameraStarted = true;
     activateBtn.textContent = 'Camera Online';
     activateBtn.disabled = true;
