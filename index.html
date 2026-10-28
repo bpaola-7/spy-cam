@@ -9,14 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="login-page">
     <div class="scene">
-      <div class="compact-shell">
-        <div class="compact-top">
-          <div class="hinge left"></div>
-          <div class="hinge right"></div>
-          <div class="gem"></div>
-        </div>
+      <div class="compact-shell is-open">
+        <div class="compact-lid"></div>
+        <div class="compact-glow"></div>
 
         <div class="compact-face">
           <div class="mirror-frame">
@@ -25,23 +22,31 @@
             <canvas id="handCanvas" aria-label="Hand tracking overlay"></canvas>
             <div class="status-strip">
               <span class="status-dot"></span>
-              <span id="scanLabel">PALM SCAN STANDBY</span>
+              <span id="scanLabel">AWAITING HANDPRINT</span>
             </div>
           </div>
         </div>
 
-        <div class="compact-lid"></div>
-
         <div class="powder-pan">
-          <div class="powder-half pink"></div>
-          <div class="powder-half coral"></div>
-        </div>
-      </div>
+          <form class="agent-form" id="agentForm">
+            <div class="field-row">
+              <label for="agentName">Agent Name</label>
+              <input id="agentName" name="agentName" type="text" maxlength="24" placeholder="Enter code name" required />
+            </div>
 
-      <div class="agent-panel">
-        <div class="seal">AGENT ACCESS</div>
-        <h1 id="welcomeText">Awaiting palm verification</h1>
-        <button id="activateBtn" type="button">Enable Camera</button>
+            <div class="field-row">
+              <label for="accessLevel">Access Level</label>
+              <select id="accessLevel" name="accessLevel">
+                <option value="Alpha">Alpha</option>
+                <option value="Bravo">Bravo</option>
+                <option value="Charlie">Charlie</option>
+                <option value="Delta">Delta</option>
+              </select>
+            </div>
+
+            <button id="activateBtn" type="button">Open Compartment</button>
+          </form>
+        </div>
       </div>
     </div>
 

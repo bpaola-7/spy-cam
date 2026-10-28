@@ -2,14 +2,12 @@ const video = document.getElementById('camera');
 const canvas = document.getElementById('handCanvas');
 const ctx = canvas.getContext('2d');
 const scanLabel = document.getElementById('scanLabel');
-const welcomeText = document.getElementById('welcomeText');
 const activateBtn = document.getElementById('activateBtn');
-
-const agentNames = ['MIRA', 'NOVA', 'SABLE', 'VANTA', 'KITE', 'DAHLIA', 'ORION', 'QUILL'];
+const agentNameInput = document.getElementById('agentName');
+const accessLevelInput = document.getElementById('accessLevel');
 
 let cameraStarted = false;
 let handConfirmed = false;
-let selectedAgent = 'MIRA';
 let validationCount = 0;
 
 function setStatus(message, success = false) {
@@ -22,8 +20,17 @@ function setStatus(message, success = false) {
     : '0 0 12px rgba(255, 204, 102, 0.7)';
 }
 
-function redirectToMission(agent) {
-  localStorage.setItem('agentName', agent);
+function redirectToMission() {
+  const agentName = (agentNameInput.value || '').trim();
+  const accessLevel = accessLevelInput.value || 'Alpha';
+
+  if (!agentName) {
+    setStatus('ENTER AGENT NAME', false);
+    return;
+  }
+
+  localStorage.setItem('agentName', agentName);
+  localStorage.setItem('accessLevel', accessLevel);
   window.location.href = 'mission.html';
 }
 
@@ -33,10 +40,7 @@ function distance(a, b) {
 
 function drawHandSkeleton(results) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
-    return;
-  }
+  if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) return;
 
   const landmarks = results.multiHandLandmarks[0];
 
@@ -74,10 +78,10 @@ function drawHandSkeleton(results) {
   ];
 
   for (let i = 0; i < landmarks.length; i += 1) {
-    const p = landmarks[i];
+    const point = landmarks[i];
     ctx.beginPath();
     ctx.fillStyle = pointColors[i] || '#ffffff';
-    ctx.arc(p.x * canvas.width, p.y * canvas.height, i === 0 ? 7 : 5, 0, Math.PI * 2);
+    ctx.arc(point.x * canvas.width, point.y * canvas.height, i === 0 ? 7 : 5, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -111,15 +115,14 @@ function isOpenPalm(landmarks) {
   return fingerTipsExtended && thumbOpen && handLifted && fingerSpread;
 }
 
-function onHandResults(results) {
+function handleResults(results) {
   if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
     validationCount = 0;
+    drawHandSkeleton(results);
     if (handConfirmed) {
       handConfirmed = false;
-      welcomeText.textContent = 'Awaiting palm verification';
-      setStatus('PALM SCAN STANDBY', false);
+      setStatus('AWAITING HANDPRINT', false);
     }
-    drawHandSkeleton(results);
     return;
   }
 
@@ -137,10 +140,8 @@ function onHandResults(results) {
   if (validationCount >= 8) {
     if (!handConfirmed) {
       handConfirmed = true;
-      selectedAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
-      welcomeText.textContent = `Welcome, Agent ${selectedAgent}`;
       setStatus('ACCESS GRANTED', true);
-      setTimeout(() => redirectToMission(selectedAgent), 1200);
+      setTimeout(redirectToMission, 1100);
     }
   } else {
     setStatus('SCANNING PALM...', false);
@@ -151,8 +152,14 @@ async function startCamera() {
   if (cameraStarted) return;
 
   if (!window.Hands || !window.Camera) {
-    welcomeText.textContent = 'MediaPipe failed to load';
     setStatus('RELOAD PAGE', false);
+    return;
+  }
+
+  const nameValue = (agentNameInput.value || '').trim();
+  if (!nameValue) {
+    setStatus('ENTER AGENT NAME', false);
+    agentNameInput.focus();
     return;
   }
 
@@ -183,7 +190,7 @@ async function startCamera() {
       minTrackingConfidence: 0.55
     });
 
-    hands.onResults(onHandResults);
+    hands.onResults(handleResults);
 
     const cam = new window.Camera(video, {
       onFrame: async () => {
@@ -195,15 +202,16 @@ async function startCamera() {
 
     cam.start();
     cameraStarted = true;
-    activateBtn.textContent = 'Camera Online';
+    activateBtn.textContent = 'Accessing';
     activateBtn.disabled = true;
-    setStatus('PALM SCAN STANDBY', false);
+    setStatus('SCANNING PALM...', false);
   } catch (error) {
     console.error(error);
-    welcomeText.textContent = 'Camera access denied';
     setStatus('ENABLE CAMERA ACCESS', false);
+    activateBtn.disabled = false;
+    activateBtn.textContent = 'Open Compartment';
   }
 }
 
 activateBtn.addEventListener('click', startCamera);
-setStatus('PALM SCAN STANDBY', false);
+setStatus('AWAITING HANDPRINT', false);
