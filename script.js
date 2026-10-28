@@ -1,394 +1,204 @@
-:root {
-  --sky: #7cd2ff;
-  --sky-deep: #4db9eb;
-  --shell-main: #d4a0d6;
-  --shell-light: #f0c9f3;
-  --shell-shadow: #b666b4;
-  --shell-dark: #8a4e98;
-  --powder-pink: #ef9dc8;
-  --powder-coral: #ff7a57;
-  --metal: #b681be;
-  --metal-dark: #3d254d;
-  --text: #f7f3ff;
-  --accent: #9ef7d7;
-  --shadow: rgba(33, 13, 41, 0.38);
+const video = document.getElementById('camera');
+const canvas = document.getElementById('handCanvas');
+const ctx = canvas.getContext('2d');
+const scanLabel = document.getElementById('scanLabel');
+const welcomeText = document.getElementById('welcomeText');
+const activateBtn = document.getElementById('activateBtn');
+
+const agentNames = [
+  'MIRA',
+  'NOVA',
+  'SABLE',
+  'VANTA',
+  'KITE',
+  'DAHLIA',
+  'ORION',
+  'QUILL'
+];
+
+let cameraStarted = false;
+let handConfirmed = false;
+let selectedAgent = 'MIRA';
+let detectedHand = null;
+
+function setStatus(message, success = false) {
+  scanLabel.textContent = message;
+  const dot = document.querySelector('.status-dot');
+  dot.style.background = success ? '#9ef7d7' : '#ffcc66';
+  dot.style.boxShadow = success
+    ? '0 0 12px rgba(158, 247, 215, 0.9)'
+    : '0 0 12px rgba(255, 204, 102, 0.7)';
 }
 
-* {
-  box-sizing: border-box;
+function redirectToMission(agent) {
+  localStorage.setItem('agentName', agent);
+  window.location.href = 'mission.html';
 }
 
-html, body {
-  margin: 0;
-  min-height: 100%;
-  height: 100%;
-  font-family: "Inter", sans-serif;
-  background: linear-gradient(180deg, var(--sky) 0%, var(--sky-deep) 100%);
-  color: var(--text);
-}
+function drawHandSkeleton(results) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-body {
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.17) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px);
-  background-size: 30px 30px;
-}
-
-.scene {
-  position: relative;
-  width: min(90vw, 980px);
-  height: min(90vh, 760px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.compact-shell {
-  position: relative;
-  width: min(72vw, 640px);
-  height: min(60vw, 600px);
-  max-height: 600px;
-  border-radius: 50% 50% 52% 48% / 50% 50% 45% 45%;
-  background: linear-gradient(135deg, var(--shell-light) 0%, var(--shell-main) 25%, var(--shell-shadow) 60%, var(--shell-dark) 100%);
-  box-shadow:
-    0 24px 60px rgba(65, 18, 72, 0.42),
-    inset 0 0 0 10px rgba(255,255,255,0.15),
-    inset 0 -16px 24px rgba(89, 39, 102, 0.3);
-  transform: rotate(-10deg);
-}
-
-.compact-shell::before,
-.compact-shell::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  inset: 18px;
-  border: 10px solid rgba(255, 255, 255, 0.08);
-  pointer-events: none;
-}
-
-.compact-top {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.hinge {
-  position: absolute;
-  width: 90px;
-  height: 18px;
-  border-radius: 20px;
-  background: linear-gradient(90deg, rgba(34,17,36,.8), rgba(255,255,255,.2), rgba(34,17,36,.8));
-  top: 22%;
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.18);
-}
-
-.hinge.left { left: 12%; transform: rotate(-12deg); }
-.hinge.right { right: 12%; transform: rotate(12deg); }
-
-.gem {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #d6ffde, #2b7b6d 30%, #11412f 70%, #0e2f2a);
-  top: 6%;
-  left: 50%;
-  transform: translateX(-50%);
-  box-shadow: 0 0 18px rgba(39, 180, 142, 0.9), inset 0 0 14px rgba(255,255,255,0.4);
-}
-
-.compact-face {
-  position: absolute;
-  inset: 18% 9% 30% 9%;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(39,24,51,0.18));
-  box-shadow:
-    inset 0 0 0 10px rgba(255,255,255,0.16),
-    inset 0 -16px 18px rgba(45, 16, 61, 0.22);
-  overflow: hidden;
-}
-
-.mirror-frame {
-  position: relative;
-  width: 82%;
-  height: 72%;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(64, 169, 230, 0.14), rgba(19, 42, 68, 0.3));
-  border: 10px solid rgba(198, 123, 221, 0.8);
-  box-shadow: inset 0 0 0 10px rgba(255,255,255,0.1), 0 0 24px rgba(255,255,255,0.08);
-  overflow: hidden;
-}
-
-#camera,
-#handCanvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.08);
-}
-
-#camera {
-  filter: saturate(1.2) contrast(1.1) brightness(0.9);
-  transform: scaleX(-1);
-}
-
-#handCanvas {
-  z-index: 2;
-  pointer-events: none;
-}
-
-.scan-ring {
-  position: absolute;
-  inset: 10% 14%;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.4);
-  box-shadow: inset 0 0 0 5px rgba(255,255,255,0.08);
-  z-index: 3;
-  pointer-events: none;
-}
-
-.status-strip {
-  position: absolute;
-  left: 50%;
-  bottom: 14%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(5, 16, 24, 0.4);
-  border: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 0 18px rgba(120, 241, 204, 0.25);
-  z-index: 3;
-  font-size: 0.72rem;
-  letter-spacing: 0.16rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 12px rgba(151, 255, 207, 0.8);
-}
-
-.compact-lid {
-  position: absolute;
-  inset: 11% 14% 36% 14%;
-  border-radius: 50%;
-  background: linear-gradient(180deg, rgba(232, 160, 255, 0.25), rgba(118, 61, 130, 0.3));
-  border: 2px solid rgba(124, 71, 122, 0.5);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.powder-pan {
-  position: absolute;
-  left: 18%;
-  right: 18%;
-  bottom: 11%;
-  height: 30%;
-  border-radius: 50% 50% 46% 46% / 63% 63% 34% 34%;
-  background: linear-gradient(180deg, rgba(226, 163, 208, 0.95), rgba(194, 99, 171, 0.95));
-  border: 8px solid rgba(135, 54, 126, 0.45);
-  box-shadow: inset 0 0 0 8px rgba(255,255,255,0.08);
-  display: flex;
-  overflow: hidden;
-}
-
-.powder-half {
-  flex: 1 1 50%;
-  position: relative;
-}
-
-.powder-half.pink {
-  background: linear-gradient(180deg, rgba(255, 205, 224, 0.9), rgba(234, 147, 180, 0.9));
-  border-right: 6px solid rgba(132, 75, 125, 0.6);
-}
-
-.powder-half.coral {
-  background: linear-gradient(180deg, rgba(255, 181, 145, 0.92), rgba(255, 122, 87, 0.92));
-}
-
-.agent-panel {
-  position: absolute;
-  left: 50%;
-  bottom: 5%;
-  transform: translateX(-50%);
-  width: min(78vw, 420px);
-  text-align: center;
-  background: rgba(35, 18, 40, 0.25);
-  border: 1px solid rgba(255,255,255,0.19);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 0 28px rgba(71, 28, 91, 0.25);
-  border-radius: 18px;
-  padding: 18px 18px 20px;
-}
-
-.seal {
-  display: inline-block;
-  margin-bottom: 8px;
-  letter-spacing: 0.28rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: rgba(255,255,255,0.72);
-}
-
-h1 {
-  margin: 0;
-  font-family: "Cinzel", serif;
-  font-size: clamp(1.3rem, 2vw, 2.3rem);
-  font-weight: 700;
-  letter-spacing: 0.08rem;
-  text-transform: uppercase;
-  color: #f8e8ff;
-}
-
-button {
-  margin-top: 14px;
-  appearance: none;
-  border: none;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #f5d9f0, #d68ed0 60%, #c06cc7);
-  color: #2f1537;
-  font-weight: 700;
-  letter-spacing: 0.08rem;
-  padding: 12px 22px;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: 0 12px 26px rgba(73, 20, 128, 0.35);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 28px rgba(73, 20, 128, 0.45);
-}
-
-button:active {
-  transform: translateY(1px);
-}
-
-.mission-page {
-  display: grid;
-  place-items: center;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
-    linear-gradient(180deg, #66bdf2 0%, #3f9fe7 100%);
-  background-size: 24px 24px, 24px 24px, 100% 100%;
-  overflow: auto;
-}
-
-.mission-panel {
-  width: min(88vw, 780px);
-  background: rgba(42, 18, 47, 0.38);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 26px;
-  padding: 28px 28px 32px;
-  box-shadow: 0 26px 60px rgba(49, 17, 64, 0.28);
-  backdrop-filter: blur(9px);
-}
-
-.mission-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  letter-spacing: 0.18rem;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.68);
-}
-
-.mission-top strong {
-  color: #f9e6ff;
-}
-
-.mission-header {
-  margin-top: 18px;
-  font-family: "Cinzel", serif;
-  font-size: clamp(2.2rem, 3vw, 4rem);
-  line-height: 1.1;
-  letter-spacing: 0.06rem;
-  color: #fff3ff;
-}
-
-.mission-copy {
-  margin-top: 18px;
-  font-size: 1.06rem;
-  line-height: 1.8;
-  color: rgba(255,255,255,0.9);
-  max-width: 54ch;
-}
-
-.briefing-box {
-  margin-top: 24px;
-  border-radius: 20px;
-  padding: 20px 20px 18px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(133, 81, 169, 0.14));
-  border: 1px solid rgba(255,255,255,0.12);
-}
-
-.briefing-box h2 {
-  margin: 0 0 12px;
-  font-size: 0.86rem;
-  letter-spacing: 0.2rem;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.7);
-}
-
-.briefing-box p {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.8;
-  color: #f7ebff;
-}
-
-.mission-actions {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 24px;
-}
-
-@media (max-width: 700px) {
-  .scene {
-    width: 100vw;
-    height: 100vh;
-    padding: 20px 10px 120px;
+  if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
+    detectedHand = null;
+    return;
   }
 
-  .compact-shell {
-    width: min(86vw, 500px);
-    height: min(78vw, 520px);
+  const landmarks = results.multiHandLandmarks[0];
+  detectedHand = landmarks;
+
+  const fingerColors = {
+    thumb: '#f4d35e',
+    index: '#39d0ff',
+    middle: '#20c997',
+    ring: '#ff9f1c',
+    pinky: '#ff5d8f'
+  };
+
+  const connectionGroups = [
+    { color: fingerColors.thumb, pairs: [[0, 1], [1, 2], [2, 3], [3, 4]] },
+    { color: fingerColors.index, pairs: [[0, 5], [5, 6], [6, 7], [7, 8]] },
+    { color: fingerColors.middle, pairs: [[5, 9], [9, 10], [10, 11], [11, 12]] },
+    { color: fingerColors.ring, pairs: [[9, 13], [13, 14], [14, 15], [15, 16]] },
+    { color: fingerColors.pinky, pairs: [[13, 17], [17, 18], [18, 19], [19, 20]] },
+    { color: '#dfe5f5', pairs: [[0, 17], [5, 9], [9, 13], [13, 17]] }
+  ];
+
+  ctx.lineWidth = 3;
+  for (const group of connectionGroups) {
+    ctx.strokeStyle = group.color;
+    for (const [from, to] of group.pairs) {
+      const p1 = landmarks[from];
+      const p2 = landmarks[to];
+      ctx.beginPath();
+      ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+      ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+      ctx.stroke();
+    }
   }
 
-  .agent-panel {
-    bottom: 4%;
-    width: min(88vw, 360px);
-  }
+  const pointColors = [
+    '#ff3b30', '#ff9f1c', '#ffd60a', '#32d74b', '#00c2ff',
+    '#7c4dff', '#ff4db8', '#00e5ff', '#7ae582', '#ff7f50',
+    '#ffb703', '#f72585', '#4cc9f0', '#90be6d', '#f6bd60',
+    '#9d4edd', '#48cae4', '#80ed99', '#f9c74f', '#ff8fab'
+  ];
 
-  .mission-panel {
-    padding: 22px 20px 24px;
-  }
-
-  .mission-top {
-    flex-direction: column;
-    align-items: flex-start;
+  for (let i = 0; i < landmarks.length; i += 1) {
+    const point = landmarks[i];
+    ctx.beginPath();
+    ctx.fillStyle = pointColors[i] || '#ffffff';
+    ctx.arc(point.x * canvas.width, point.y * canvas.height, i === 0 ? 7 : 5, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
+
+function isOpenPalm(landmarks) {
+  if (!landmarks || landmarks.length < 21) return false;
+
+  const fingerTipIndices = [4, 8, 12, 16, 20];
+  const fingerBaseIndices = [2, 6, 10, 14, 18];
+
+  const hasSpread = landmarks[4].x > landmarks[2].x - 0.08 && landmarks[4].x < landmarks[2].x + 0.18;
+
+  const tipsAboveBases = fingerTipIndices.every((tipIndex, index) => {
+    const baseIndex = fingerBaseIndices[index];
+    return landmarks[tipIndex].y < landmarks[baseIndex].y;
+  });
+
+  const thumbOpen = landmarks[4].x > landmarks[3].x;
+  const handUp = landmarks[9].y < landmarks[0].y + 0.2;
+
+  return hasSpread && tipsAboveBases && thumbOpen && handUp;
+}
+
+function handlePalmScan(results) {
+  if (!results.multiHandLandmarks || !results.multiHandLandmarks.length) {
+    if (handConfirmed) {
+      handConfirmed = false;
+      welcomeText.textContent = 'Awaiting palm verification';
+      setStatus('PALM SCAN STANDBY', false);
+    }
+    drawHandSkeleton(results);
+    return;
+  }
+
+  const landmarks = results.multiHandLandmarks[0];
+  drawHandSkeleton(results);
+
+  if (!isOpenPalm(landmarks)) {
+    setStatus('PALM REQUIRES OPEN POSITION', false);
+    return;
+  }
+
+  if (!handConfirmed) {
+    handConfirmed = true;
+    selectedAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
+    welcomeText.textContent = `Welcome, Agent ${selectedAgent}`;
+    setStatus('ACCESS GRANTED', true);
+
+    setTimeout(() => {
+      redirectToMission(selectedAgent);
+    }, 1200);
+  }
+}
+
+async function startCamera() {
+  if (cameraStarted) return;
+
+  if (!window.Hands || !window.Camera) {
+    welcomeText.textContent = 'MediaPipe failed to load';
+    setStatus('RELOAD PAGE', false);
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'user',
+        width: { ideal: 640 },
+        height: { ideal: 480 }
+      },
+      audio: false
+    });
+
+    video.srcObject = stream;
+    await video.play();
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7
+    });
+
+    hands.onResults(handlePalmScan);
+
+    const camera = new Camera(video, {
+      onFrame: async () => {
+        await hands.send({ image: video });
+      },
+      width: canvas.width,
+      height: canvas.height
+    });
+
+    camera.start();
+    cameraStarted = true;
+    activateBtn.textContent = 'Camera Online';
+    activateBtn.disabled = true;
+    setStatus('PALM SCAN STANDBY', false);
+  } catch (error) {
+    console.error(error);
+    welcomeText.textContent = 'Camera access denied';
+    setStatus('ENABLE CAMERA ACCESS', false);
+  }
+}
+
+activateBtn.addEventListener('click', startCamera);
+setStatus('PALM SCAN STANDBY', false);
