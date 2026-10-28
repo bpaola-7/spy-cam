@@ -1,2 +1,4 @@
-# spy-cam
-Repository for a spy cam project
+node_modules/
+.DS_Store
+.vite/
+*.log

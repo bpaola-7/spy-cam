@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Palm Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="scene">
+      <div class="compact-shell">
+        <div class="compact-top">
+          <div class="hinge left"></div>
+          <div class="hinge right"></div>
+          <div class="gem"></div>
+        </div>
+
+        <div class="compact-face">
+          <div class="mirror-frame">
+            <div class="scan-ring"></div>
+            <video id="camera" autoplay playsinline muted></video>
+            <canvas id="handCanvas" aria-label="Hand tracking overlay"></canvas>
+            <div class="status-strip">
+              <span class="status-dot"></span>
+              <span id="scanLabel">PALM SCAN STANDBY</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="compact-lid"></div>
+
+        <div class="powder-pan">
+          <div class="powder-half pink"></div>
+          <div class="powder-half coral"></div>
+        </div>
+      </div>
+
+      <div class="agent-panel">
+        <div class="seal">AGENT ACCESS</div>
+        <h1 id="welcomeText">Awaiting palm verification</h1>
+        <button id="activateBtn" type="button">Enable Camera</button>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
