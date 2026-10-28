@@ -10,26 +10,54 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="mission-page">
-    <main class="mission-panel">
-      <div class="mission-top">
-        <span>Agent Clearance</span>
-        <strong id="agentBadge">AGENT</strong>
-      </div>
+    <main class="mission-layout" id="missionLayout">
+      <section class="cipher-visual" aria-label="Cipher challenge panel">
+        <div class="compact-shell">
+          <div class="compact-lid"></div>
+          <div class="compact-glow"></div>
 
-      <h1 class="mission-header" id="missionTitle">Welcome</h1>
-      <p class="mission-copy" id="missionCopy">Access granted. Solve the cipher and confirm the code.</p>
+          <div class="compact-face">
+            <div class="mirror-frame">
+              <div class="scan-ring"></div>
+              <div class="cipher-display">
+                <span class="code-label">Anagram Cipher</span>
+                <div class="anagram-box" id="anagramText">SILENT</div>
+              </div>
+              <div class="status-strip">
+                <span class="status-dot"></span>
+                <span id="scanLabel">ACCESS CHECK</span>
+              </div>
+            </div>
+          </div>
 
-      <section class="code-card">
-        <span class="code-label">Anagram Cipher</span>
-        <div class="anagram-box" id="anagramText">SILENT</div>
+          <div class="powder-pan">
+            <form class="challenge-form" id="cipherForm">
+              <input id="codeInput" type="text" maxlength="20" placeholder="Type the decoded code" aria-label="Secret code" />
+              <button type="submit">Unlock</button>
+            </form>
+          </div>
+        </div>
       </section>
 
-      <form class="challenge-form" id="cipherForm">
-        <input id="codeInput" type="text" maxlength="20" placeholder="Type the decoded code" aria-label="Secret code" />
-        <button type="submit">Unlock</button>
-      </form>
+      <aside class="mission-panel mission-brief" id="missionBrief" aria-live="polite">
+        <div class="mission-top">
+          <span>Agent Clearance</span>
+          <strong id="agentBadge">AGENT</strong>
+        </div>
 
-      <div class="success-text" id="successText">ACCESS VERIFIED — CODE: LISTEN</div>
+        <h1 class="mission-header" id="missionTitle">Welcome</h1>
+        <p class="mission-copy" id="missionCopy">Access granted. Solve the cipher and confirm the code.</p>
+
+        <div class="success-text" id="successText">ACCESS VERIFIED — CODE: LISTEN</div>
+
+        <div class="briefing-box">
+          <h2>New Mission</h2>
+          <p>
+            Secure the encrypted courier before dawn. Maintain your disguise, avoid visual detection,
+            and extract the package without leaving a trace. The target is moving through the abandoned tower district at 02:17.
+          </p>
+        </div>
+      </aside>
     </main>
 
     <script src="cipher.js"></script>

@@ -4,6 +4,8 @@ const missionCopy = document.getElementById('missionCopy');
 const codeInput = document.getElementById('codeInput');
 const challengeForm = document.getElementById('cipherForm');
 const successText = document.getElementById('successText');
+const missionLayout = document.getElementById('missionLayout');
+const scanLabel = document.getElementById('scanLabel');
 
 const agentName = (localStorage.getItem('agentName') || 'Agent').trim();
 const accessLevel = localStorage.getItem('accessLevel') || 'Alpha';
@@ -21,6 +23,10 @@ if (missionCopy) {
   missionCopy.textContent = `Level ${accessLevel} clearance accepted. Solve the cipher to confirm the signal.`;
 }
 
+if (scanLabel) {
+  scanLabel.textContent = 'ACCESS CHECK';
+}
+
 challengeForm.addEventListener('submit', (event) => {
   event.preventDefault();
   const value = (codeInput.value || '').trim().toUpperCase();
@@ -29,6 +35,14 @@ challengeForm.addEventListener('submit', (event) => {
     successText.classList.add('visible');
     successText.textContent = `ACCESS VERIFIED — CODE: ${answer}`;
     codeInput.value = '';
+
+    if (missionLayout) {
+      missionLayout.classList.add('is-solved');
+    }
+
+    if (scanLabel) {
+      scanLabel.textContent = 'MISSION LOCKED';
+    }
   } else {
     successText.classList.remove('visible');
     codeInput.value = '';
