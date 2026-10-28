@@ -3,55 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Agent Palm Access</title>
+    <title>Agent Access</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="login-page">
-    <div class="scene">
-      <div class="compact-shell is-open">
-        <div class="compact-lid"></div>
-        <div class="compact-glow"></div>
+    <main class="login-shell">
+      <div class="seal">Agent Access</div>
+      <h1>Agent Registry</h1>
 
-        <div class="compact-face">
-          <div class="mirror-frame">
-            <div class="scan-ring"></div>
-            <video id="camera" autoplay playsinline muted></video>
-            <canvas id="handCanvas" aria-label="Hand tracking overlay"></canvas>
-            <div class="status-strip">
-              <span class="status-dot"></span>
-              <span id="scanLabel">AWAITING HANDPRINT</span>
-            </div>
-          </div>
+      <form id="agentForm" class="agent-form">
+        <div class="field-row">
+          <label for="agentName">Name</label>
+          <input id="agentName" name="agentName" type="text" maxlength="24" placeholder="Enter your code name" required />
         </div>
 
-        <div class="powder-pan">
-          <form class="agent-form" id="agentForm">
-            <div class="field-row">
-              <label for="agentName">Agent Name</label>
-              <input id="agentName" name="agentName" type="text" maxlength="24" placeholder="Enter code name" required />
-            </div>
-
-            <div class="field-row">
-              <label for="accessLevel">Access Level</label>
-              <select id="accessLevel" name="accessLevel">
-                <option value="Alpha">Alpha</option>
-                <option value="Bravo">Bravo</option>
-                <option value="Charlie">Charlie</option>
-                <option value="Delta">Delta</option>
-              </select>
-            </div>
-
-            <button id="activateBtn" type="button">Open Compartment</button>
-          </form>
+        <div class="field-row">
+          <label for="accessLevel">Clearance Level</label>
+          <select id="accessLevel" name="accessLevel">
+            <option value="Alpha">Alpha</option>
+            <option value="Bravo">Bravo</option>
+            <option value="Charlie">Charlie</option>
+            <option value="Delta">Delta</option>
+          </select>
         </div>
-      </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+        <button type="submit" class="primary-btn">Proceed to Hand Scan</button>
+      </form>
+    </main>
+
     <script src="script.js"></script>
   </body>
 </html>

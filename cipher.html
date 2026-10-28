@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Secret Cipher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="mission-page">
+    <main class="mission-panel">
+      <div class="mission-top">
+        <span>Agent Clearance</span>
+        <strong id="agentBadge">AGENT</strong>
+      </div>
+
+      <h1 class="mission-header" id="missionTitle">Welcome</h1>
+      <p class="mission-copy" id="missionCopy">Access granted. Solve the cipher and confirm the code.</p>
+
+      <section class="code-card">
+        <span class="code-label">Anagram Cipher</span>
+        <div class="anagram-box" id="anagramText">SILENT</div>
+      </section>
+
+      <form class="challenge-form" id="cipherForm">
+        <input id="codeInput" type="text" maxlength="20" placeholder="Type the decoded code" aria-label="Secret code" />
+        <button type="submit">Unlock</button>
+      </form>
+
+      <div class="success-text" id="successText">ACCESS VERIFIED — CODE: LISTEN</div>
+    </main>
+
+    <script src="cipher.js"></script>
+  </body>
+</html>

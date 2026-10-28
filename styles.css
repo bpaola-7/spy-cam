@@ -19,8 +19,8 @@
 
 html, body {
   margin: 0;
-  height: 100%;
   min-height: 100%;
+  height: 100%;
   font-family: "Inter", sans-serif;
   background: linear-gradient(180deg, var(--sky) 0%, var(--sky-deep) 100%);
   color: var(--text);
@@ -36,8 +36,81 @@ body {
   background-size: 30px 30px;
 }
 
-.login-page {
+.login-page, .scan-page {
   background: linear-gradient(180deg, var(--sky) 0%, var(--sky-deep) 100%);
+}
+
+.login-shell {
+  width: min(92vw, 540px);
+  padding: 32px 28px 30px;
+  border-radius: 24px;
+  background: rgba(39, 18, 43, 0.34);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 24px 60px rgba(49, 17, 64, 0.28);
+  backdrop-filter: blur(8px);
+}
+
+.seal {
+  display: inline-block;
+  margin-bottom: 10px;
+  letter-spacing: 0.28rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.72);
+}
+
+h1 {
+  margin: 0;
+  font-family: "Cinzel", serif;
+  font-size: clamp(1.8rem, 2.8vw, 3rem);
+  letter-spacing: 0.08rem;
+  color: #f8e8ff;
+}
+
+.agent-form {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.field-row {
+  display: grid;
+  gap: 8px;
+}
+
+label {
+  font-size: 0.68rem;
+  letter-spacing: 0.14rem;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.78);
+}
+
+input, select {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 12px;
+  color: var(--text);
+  padding: 12px 14px;
+  font-size: 1rem;
+  outline: none;
+}
+
+input::placeholder { color: rgba(255,255,255,0.45); }
+
+.primary-btn {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f5d9f0, #d68ed0 60%, #c06cc7);
+  color: #2f1537;
+  font-weight: 700;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(73, 20, 128, 0.35);
 }
 
 .scene {
@@ -70,12 +143,6 @@ body {
   inset: 18px;
   border-radius: 50%;
   border: 10px solid rgba(255,255,255,0.08);
-  pointer-events: none;
-}
-
-.compact-top {
-  position: absolute;
-  inset: 0;
   pointer-events: none;
 }
 
@@ -198,38 +265,12 @@ body {
   z-index: 4;
 }
 
-.agent-form {
-  width: min(100%, 280px);
+.scan-panel {
   display: grid;
-  gap: 14px;
-  padding: 10px 12px 0;
+  gap: 12px;
+  width: min(260px, 80%);
+  text-align: center;
 }
-
-.field-row {
-  display: grid;
-  gap: 6px;
-}
-
-label {
-  font-size: 0.68rem;
-  letter-spacing: 0.12rem;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.8);
-}
-
-input, select {
-  width: 100%;
-  background: var(--input-bg);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 12px;
-  color: var(--text);
-  padding: 12px 12px;
-  font-size: 0.96rem;
-  outline: none;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
-}
-
-input::placeholder { color: rgba(255,255,255,0.45); }
 
 button {
   appearance: none;
@@ -244,7 +285,6 @@ button {
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: 0 12px 26px rgba(73, 20, 128, 0.35);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 button:hover {
@@ -278,8 +318,8 @@ button:active { transform: translateY(1px); }
 .mission-top {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
   letter-spacing: 0.18rem;
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -377,6 +417,10 @@ button:active { transform: translateY(1px); }
     left: 15%;
     right: 15%;
     bottom: 9%;
+  }
+
+  .login-shell {
+    padding: 26px 20px 24px;
   }
 
   .mission-panel {
